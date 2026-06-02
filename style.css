@@ -1,140 +1,206 @@
+/* ========== RESET E GLOBAL ========== */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Segoe UI', sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
-    background-color: #fdf6f2;
-    min-height: 100vh;
+  font-family: 'DM Sans', 'Segoe UI', Roboto, sans-serif;
+  background: #f5f7fb;
+  display: flex;
+  justify-content: center;
+  padding-bottom: 70px;
 }
 
-/* CONTAINER FLEXÍVEL */
-.container {
-    width: 100%;
+/* Container principal */
+
+.avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover; /* garante que não achate */
+}
+
+.app-container {
+  max-width: 480px;
+  width: 100%;
+  background: white;
+  min-height: 100vh;
+  box-shadow: 0 0 20px rgba(0,0,0,0.05);
+  position: relative;
+}
+
+@media (min-width: 768px) {
+  body {
+    padding: 20px 0;
+  }
+  .app-container {
+    max-width: 1000px;
+    border-radius: 32px;
     margin: 0 auto;
-    background-color: white;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    position: relative;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  }
 }
 
-/* No PC, vamos dar uma largura máxima, mas maior que a de um celular */
+/* ========== HEADER ========== */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 16px 12px;
+  background: white;
+  border-bottom: 1px solid #f0f0f0;
+}
+.app-header h1 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #1e2a4a;
+}
+.back-btn {
+  background: none;
+  border: none;
+  font-size: 1.6rem;
+  cursor: pointer;
+  color: #3b9e8c;
+  padding: 0 8px;
+}
+.placeholder {
+  width: 40px;
+}
+
+/* ========== MENU INFERIOR (FIXO) ========== */
+.bottom-menu {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-width: 480px;
+  margin: 0 auto;
+  background: white;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 0 14px;
+  z-index: 100;
+}
 @media (min-width: 768px) {
-    .container {
-        max-width: 1000px; /* Largura de site no computador */
-        margin: 20px auto;
-        border-radius: 20px;
-        min-height: 90vh;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-    }
+  .bottom-menu {
+    max-width: 1000px;
+    border-radius: 0 0 32px 32px;
+  }
+}
+.menu-item {
+  text-decoration: none;
+  color: #94a3b8;
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.2s;
+}
+.menu-item i {
+  font-size: 24px;
+}
+.menu-item.active {
+  color: #3b9e8c;
+}
+.menu-item span {
+  font-size: 11px;
 }
 
-/* HEADER */
-.header {
-    padding: 20px;
-    display: flex;
-    align-items: center;
-    border-bottom: 1px solid #f5f5f5;
+/* ========== CARDS E GRID ========== */
+.card {
+  background: white;
+  border-radius: 24px;
+  padding: 20px;
+  margin: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
 }
-
-.header h1 {
-    flex: 1;
-    text-align: center;
-    color: #2c3e50;
+.card-highlight {
+  background: #faf0e6;
 }
-
-/* CONTEÚDO PRINCIPAL */
-.content {
-    padding: 30px;
-    flex: 1;
+.grid-3cols {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin: 16px;
 }
-
-/* GRID PARA COMPUTADOR: Capa de um lado, Campos do outro */
-.top-row {
-    display: flex;
-    flex-direction: column; /* Padrão celular */
-    gap: 20px;
+.book-cover {
+  aspect-ratio: 2/3;
+  width: 100%;
+  object-fit: cover;
+  border-radius: 12px;
+  background: #f0f0f0;
+  cursor: pointer;
 }
-
-@media (min-width: 600px) {
-    .top-row {
-        flex-direction: row; /* No PC, fica um do lado do outro */
-        align-items: flex-start;
-    }
+.progress-bar {
+  background: #e0e0e0;
+  border-radius: 20px;
+  height: 8px;
+  overflow: hidden;
+  margin: 12px 0;
 }
-
-.upload-cover {
-    width: 150px;
-    height: 210px;
-    border: 2px dashed #6fb2a0;
-    border-radius: 15px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background-color: #f9fdfc;
-    flex-shrink: 0;
+.progress-fill {
+  background: #6b7280;
+  height: 100%;
+  width: 0%;
+  border-radius: 20px;
+  transition: width 0.3s;
 }
-
-.inputs-main {
-    flex: 1;
-    display: grid;
-    grid-template-columns: 1fr 1fr; /* Divide em duas colunas no PC */
-    gap: 15px;
+.btn-primary {
+  background: #3b9e8c;
+  color: white;
+  border: none;
+  border-radius: 40px;
+  padding: 12px 24px;
+  font-weight: bold;
+  cursor: pointer;
+  width: 100%;
+  text-align: center;
+  transition: 0.2s;
 }
-
-/* O título ocupa as duas colunas */
-.main-title {
-    grid-column: span 2;
+.btn-primary:hover {
+  background: #2e7a6b;
 }
-
-input, textarea {
-    padding: 12px;
-    border: 1px solid #eee;
-    border-radius: 10px;
-    background: #fafafa;
-    width: 100%;
+.btn-outline {
+  background: transparent;
+  border: 1px solid #ddd;
+  border-radius: 40px;
+  padding: 8px 16px;
+  cursor: pointer;
 }
-
-/* BOTÕES */
-.actions {
-    display: flex;
-    gap: 15px;
-    margin-top: 40px;
-    justify-content: flex-end; /* Alinha à direita no PC */
+/* ========== FORMULÁRIO ========== */
+input, textarea, .fake-upload {
+  width: 100%;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  font-family: inherit;
+  font-size: 14px;
 }
-
-.btn-save {
-    background: #6fb2a0;
-    color: white;
-    border: none;
-    padding: 12px 40px;
-    border-radius: 10px;
-    font-weight: bold;
-    cursor: pointer;
+.fake-upload {
+  background: #f9fdfc;
+  border: 2px dashed #3b9e8c;
+  text-align: center;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
 }
-
-.btn-cancel {
-    background: none;
-    border: 1px solid #ccc;
-    padding: 12px 30px;
-    border-radius: 10px;
+.star-rating i {
+  font-size: 28px;
+  cursor: pointer;
+  color: #ffc107;
+  margin-right: 4px;
 }
-
-/* NAVBAR (SÓ APARECE NO CELULAR) */
-.navbar {
-    display: flex;
-    justify-content: space-around;
-    padding: 15px;
-    background: white;
-    border-top: 1px solid #eee;
-}
-
-@media (min-width: 768px) {
-    .navbar {
-        border-radius: 0 0 20px 20px;
-    }
-}
+/* ========== UTILITÁRIOS ========== */
+.text-center { text-align: center; }
+.mt-4 { margin-top: 16px; }
+.mb-2 { margin-bottom: 8px; }
+.w-100 { width: 100%; }
+.relative { position: relative; }

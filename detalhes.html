@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Readify - Detalhes do Livro</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+    </script>
+    <style>
+        .book-detail { padding: 20px; }
+        .cover-large { width: 180px; aspect-ratio: 2/3; object-fit: cover; border-radius: 16px; margin: 0 auto 20px; display: block; box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+        .info-row { margin: 12px 0; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+        .info-label { font-weight: 600; width: 90px; color: #3b9e8c; }
+        .progress-slider { width: 100%; margin: 16px 0; }
+        input[type=range] { width: 100%; margin: 10px 0; }
+        .page-input { display: flex; gap: 12px; align-items: center; margin-top: 12px; }
+        .page-input input { flex: 1; padding: 10px; border-radius: 30px; border: 1px solid #ddd; }
+        .btn-pdf { background: #e79a78; color: white; border: none; padding: 12px; border-radius: 40px; width: 100%; margin-top: 20px; font-weight: bold; cursor: pointer; }
+        .btn-outline { background: transparent; border: 1px solid #ddd; border-radius: 40px; padding: 12px; width: 100%; margin-top: 16px; font-weight: bold; cursor: pointer; }
+        .text-center { text-align: center; }
+        .edit-resenha { display: flex; gap: 8px; margin-top: 8px; }
+        .edit-resenha input { flex: 1; padding: 8px; border-radius: 20px; border: 1px solid #ccc; }
+        .edit-resenha button { background: #3b9e8c; border: none; color: white; padding: 8px 16px; border-radius: 20px; cursor: pointer; }
+        .upload-pdf { margin-top: 16px; }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <div class="app-header">
+        <button class="back-btn" onclick="history.back()"><i class="fas fa-chevron-left"></i></button>
+        <h1>Detalhes do Livro</h1>
+        <div class="placeholder"></div>
+    </div>
+
+    <div id="detalhes" class="book-detail">
+        <div class="text-center">Carregando...</div>
+    </div>
+
+    <div class="bottom-menu">
+        <a href="home.html" class="menu-item"><i class="fas fa-home"></i><span>Home</span></a>
+        <a href="meuslivros.html" class="menu-item"><i class="fas fa-book"></i><span>Meus Livros</span></a>
+        <a href="favoritos.html" class="menu-item"><i class="fas fa-star"></i><span>Favoritos</span></a>
+        <a href="perfil.html" class="menu-item"><i class="fas fa-user"></i><span>Perfil</span></a>
+    </div>
+</div>
+
+<script src="db.js"></script>
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const livroId = urlParams.get('id');
+
+    async function carregarDetalhes() {
+        const livros = getLivros();
+        const livro = livros.find(l => l.id == livroId);
+        if (!livro) {
+            document.getElementById('detalhes').innerHTML = '<div class="text-center">Livro não encontrado.</div>';
+            return;
+        }
+        const percent = livro.totalPaginas ? (livro.progressoPagina / livro.totalPaginas * 100).toFixed(0) : (livro.progresso || 0);
+        const estrelas = [1,2,3,4,5].map(v => `<i class="fas fa-star" style="color:${v <= (livro.avaliacao||0) ? '#ffc107' : '#e2e2e2'}"></i>`).join('');
+        
+        let pdfButton = '';
+        if (livro.totalPaginas > 0) {
+            pdfButton = `<button id="abrirPdfBtn" class="btn-pdf"><i class="fas fa-file-pdf"></i> 📖 Ler PDF (${livro.totalPaginas} páginas)</button>`;
+        } else {
+            pdfButton = `
+                <div class="upload-pdf">
+                    <label>📄 Adicionar PDF agora:</label>
+                    <input type="file" id="uploadPdfFile" accept="application/pdf">
+                    <div id="uploadPdfInfo" style="font-size:12px; margin-top:4px;"></div>
+                    <button id="salvarPdfBtn" class="btn-outline" style="margin-top:8px;">Salvar PDF</button>
+                </div>
+            `;
+        }
+        
+        document.getElementById('detalhes').innerHTML = `
+            <img src="${livro.capaUrl}" class="cover-large">
+            <h2 class="text-center">${livro.titulo}</h2>
+            <p class="text-center" style="color:#6b7280;">${livro.autor}</p>
+            
+            <div class="info-row"><span class="info-label">Ano:</span> ${livro.ano}</div>
+            <div class="info-row"><span class="info-label">Categoria:</span> ${livro.categoria}</div>
+            <div class="info-row"><span class="info-label">Avaliação:</span> <div class="stars-grande">${estrelas}</div></div>
+            
+            <div class="info-row"><span class="info-label">Resenha:</span> 
+                <span id="resenhaTexto">${livro.comentario || 'Nenhuma resenha ainda.'}</span>
+                <button id="editarResenhaBtn" class="btn-outline" style="margin-left:8px; padding:4px 12px;">✏️ Editar</button>
+            </div>
+            <div id="editarResenhaArea" style="display:none;" class="edit-resenha">
+                <input type="text" id="novaResenha" value="${(livro.comentario || '').replace(/"/g, '&quot;')}" placeholder="Digite sua resenha...">
+                <button id="salvarResenhaBtn">Salvar</button>
+            </div>
+            
+            <div class="progress-slider">
+                <label>Progresso de leitura: <span id="percentValue">${percent}%</span></label>
+                <input type="range" id="progressSlider" min="0" max="100" value="${percent}" step="1">
+            </div>
+            
+            ${livro.totalPaginas ? `
+            <div class="page-input">
+                <span>Página lida:</span>
+                <input type="number" id="paginaInput" min="1" max="${livro.totalPaginas}" value="${livro.progressoPagina || 1}" step="1">
+                <span>de ${livro.totalPaginas}</span>
+            </div>
+            ` : `
+            <div class="page-input">
+                <span>Progresso manual:</span>
+                <input type="number" id="percentInput" min="0" max="100" value="${percent}" step="1">
+                <span>%</span>
+            </div>
+            `}
+            
+            ${pdfButton}
+            
+            <button id="favoritarBtn" class="btn-outline">
+                <i class="${livro.favorito ? 'fas' : 'far'} fa-star"></i> ${livro.favorito ? 'Desfavoritar' : 'Favoritar'}
+            </button>
+        `;
+        
+        // Slider progresso
+        const slider = document.getElementById('progressSlider');
+        if (slider) {
+            slider.addEventListener('input', async (e) => {
+                const val = e.target.value;
+                document.getElementById('percentValue').innerText = val;
+                let novaPagina = livro.totalPaginas ? Math.floor((val / 100) * livro.totalPaginas) : 0;
+                if (novaPagina < 1) novaPagina = 1;
+                await atualizarLivro(livroId, { progresso: parseInt(val), progressoPagina: novaPagina });
+                if (livro.totalPaginas && document.getElementById('paginaInput')) {
+                    document.getElementById('paginaInput').value = novaPagina;
+                }
+                if (document.getElementById('percentInput')) {
+                    document.getElementById('percentInput').value = val;
+                }
+            });
+        }
+        
+        // Input página
+        const paginaInput = document.getElementById('paginaInput');
+        if (paginaInput) {
+            paginaInput.addEventListener('change', async (e) => {
+                let pagina = parseInt(e.target.value);
+                if (isNaN(pagina)) pagina = 1;
+                if (pagina < 1) pagina = 1;
+                if (pagina > livro.totalPaginas) pagina = livro.totalPaginas;
+                const novoPercent = Math.floor((pagina / livro.totalPaginas) * 100);
+                await atualizarLivro(livroId, { progressoPagina: pagina, progresso: novoPercent });
+                document.getElementById('percentValue').innerText = novoPercent;
+                if (slider) slider.value = novoPercent;
+            });
+        }
+        
+        // Input percentual manual
+        const percentInput = document.getElementById('percentInput');
+        if (percentInput) {
+            percentInput.addEventListener('change', async (e) => {
+                let val = parseInt(e.target.value);
+                if (isNaN(val)) val = 0;
+                if (val < 0) val = 0;
+                if (val > 100) val = 100;
+                await atualizarLivro(livroId, { progresso: val });
+                document.getElementById('percentValue').innerText = val;
+                if (slider) slider.value = val;
+            });
+        }
+        
+        // Editar resenha
+        document.getElementById('editarResenhaBtn').onclick = () => {
+            document.getElementById('editarResenhaArea').style.display = 'flex';
+        };
+        document.getElementById('salvarResenhaBtn').onclick = async () => {
+            const novaResenha = document.getElementById('novaResenha').value;
+            await atualizarLivro(livroId, { comentario: novaResenha });
+            document.getElementById('resenhaTexto').innerText = novaResenha || 'Nenhuma resenha ainda.';
+            document.getElementById('editarResenhaArea').style.display = 'none';
+        };
+        
+        // Abrir leitor PDF
+        const abrirPdf = document.getElementById('abrirPdfBtn');
+        if (abrirPdf) {
+            abrirPdf.onclick = () => {
+                window.location.href = `leitor.html?id=${livroId}`;
+            };
+        }
+        
+        // Upload de PDF (se não tiver)
+        const uploadPdfInput = document.getElementById('uploadPdfFile');
+        const salvarPdfBtn = document.getElementById('salvarPdfBtn');
+        if (uploadPdfInput && salvarPdfBtn) {
+            let novoPdfFile = null;
+            let novasPaginas = 0;
+            uploadPdfInput.addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    novoPdfFile = file;
+                    const arrayBuffer = await file.arrayBuffer();
+                    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                    novasPaginas = pdf.numPages;
+                    document.getElementById('uploadPdfInfo').innerText = `PDF carregado: ${novasPaginas} páginas. Clique em Salvar.`;
+                }
+            });
+            salvarPdfBtn.onclick = async () => {
+                if (novoPdfFile) {
+                    await atualizarLivro(livroId, { totalPaginas: novasPaginas, progressoPagina: 0, progresso: 0 }, novoPdfFile);
+                    alert("PDF adicionado com sucesso! Atualizando página...");
+                    window.location.reload();
+                } else {
+                    alert("Selecione um arquivo PDF primeiro.");
+                }
+            };
+        }
+        
+        // Favoritar
+        document.getElementById('favoritarBtn').onclick = async () => {
+            const novoFav = !livro.favorito;
+            await atualizarLivro(livroId, { favorito: novoFav });
+            carregarDetalhes();
+        };
+    }
+    
+    carregarDetalhes();
+</script>
+</body>
+</html>

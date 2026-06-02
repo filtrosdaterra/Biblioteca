@@ -1,308 +1,250 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Meus Livros</title>
-
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-<style>
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    font-family: 'DM Sans', Arial, sans-serif;
-    background: #ffffff;
-    padding-bottom: 80px;
-    display: flex;
-    justify-content: center;
-}
-
-.container {
-    width: 100%;
-    max-width: 480px;
-}
-
-/* topo */
-.topo {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 20px 16px 10px;
-    background: white;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-}
-
-.topo h1 {
-    font-size: 18px;
-    font-weight: 700;
-    color: #1e2a4a;
-}
-
-.voltar {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 6px;
-    border-radius: 10px;
-    font-size: 20px;
-}
-
-.voltar:hover {
-    background: #f3f4f6;
-}
-
-/* intro */
-.intro {
-    background: #faf0e6;
-    margin: 10px 16px;
-    padding: 20px;
-    border-radius: 16px;
-    text-align: center;
-}
-
-.intro h2 {
-    font-size: 15px;
-    margin-bottom: 14px;
-    color: #555;
-}
-
-/* busca */
-.buscar input {
-    width: 100%;
-    padding: 12px 16px;
-    border-radius: 999px;
-    border: none;
-    background: white;
-    font-size: 14px;
-    outline: none;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-}
-
-.buscar input:focus {
-    box-shadow: 0 0 0 2px #3b9e8c33;
-}
-
-/* contador */
-.contador {
-    padding: 10px 16px;
-    font-size: 12px;
-    color: #888;
-}
-
-/* grid */
-.livros {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 14px;
-    padding: 0 16px 20px;
-}
-
-/* card */
-.livro {
-    cursor: pointer;
-    transition: 0.2s;
-}
-
-.livro:hover {
-    transform: scale(1.04);
-}
-
-/* imagem */
-.livro img {
-    width: 100%;
-    height: 140px;
-    object-fit: cover;
-    border-radius: 12px;
-}
-
-/* info */
-.livro-info {
-    padding-top: 6px;
-}
-
-.livro-titulo {
-    font-size: 12px;
-    font-weight: 700;
-    color: #1e2a4a;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.livro-autor {
-    font-size: 11px;
-    color: #777;
-}
-
-/* vazio */
-.sem-resultados {
-    text-align: center;
-    padding: 40px 20px;
-    color: #aaa;
-    font-size: 13px;
-    grid-column: 1 / -1;
-}
-
-/* menu */
-.menu {
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    max-width: 480px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: white;
-    border-top: 1px solid #eee;
-    display: flex;
-    justify-content: space-around;
-    padding: 8px 0;
-}
-
-.menu a {
-    text-decoration: none;
-    color: #666;
-    font-size: 12px;
-}
-
-.menu div {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.menu img {
-    width: 22px;
-    margin-bottom: 2px;
-    opacity: 0.7;
-}
-
-.menu .ativo {
-    color: #3b9e8c;
-}
-
-.menu .ativo img {
-    opacity: 1;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Readify - Meus Livros</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .search-box {
+            margin: 16px;
+        }
+        .search-box input {
+            border-radius: 40px;
+            background: #f5f5f5;
+            border: none;
+            padding: 12px 20px;
+            width: 100%;
+        }
+        .book-card {
+            position: relative;
+            cursor: pointer;
+        }
+        .menu-dots {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            background: rgba(255,255,255,0.85);
+            border-radius: 20px;
+            padding: 6px 8px;
+            font-size: 16px;
+            font-weight: bold;
+            z-index: 10;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .btn-add-floating {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background: #3b9e8c;
+            color: white;
+            width: 56px;
+            height: 56px;
+            border-radius: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            cursor: pointer;
+            border: none;
+            z-index: 200;
+        }
+        @media (min-width: 768px) {
+            .btn-add-floating { right: calc(50% - 500px + 20px); }
+        }
+        .progress-info {
+            font-size: 10px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+        /* Menu flutuante (popup) */
+        .popup-menu {
+            position: fixed;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            padding: 8px 0;
+            min-width: 160px;
+            z-index: 1000;
+            display: none;
+        }
+        .popup-menu button {
+            background: none;
+            border: none;
+            width: 100%;
+            text-align: left;
+            padding: 12px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .popup-menu button:hover {
+            background: #f5f5f5;
+        }
+        .popup-menu i {
+            width: 20px;
+            color: #3b9e8c;
+        }
+    </style>
+    <script src="db.js"></script>
 </head>
-
 <body>
-
-<div class="container">
-
-<header class="topo">
-    <button class="voltar" onclick="history.back()">←</button>
-    <h1>Meus Livros</h1>
-    <div style="width:24px;"></div>
-</header>
-
-<section class="intro">
-    <h2>Organize e acompanhe seus livros</h2>
-    <div class="buscar">
-        <input type="text" id="search" placeholder="Buscar por título ou autor...">
+<div class="app-container">
+    <div class="app-header">
+        <button class="back-btn" onclick="history.back()"><i class="fas fa-chevron-left"></i></button>
+        <h1>Meus Livros</h1>
+        <div class="placeholder"></div>
     </div>
-</section>
 
-<div class="contador" id="contador"></div>
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="🔍 Buscar por título ou autor...">
+    </div>
+    <div id="contador" style="padding: 0 16px 8px; font-size: 13px; color: #6b7280;"></div>
+    <div id="livrosGrid" class="grid-3cols"></div>
 
-<section class="livros" id="listaLivros"></section>
+    <button class="btn-add-floating" id="addBookBtn"><i class="fas fa-plus"></i></button>
 
-<div class="menu">
-    <a href="home.html">
-        <div>
-            <img src="icons/inicio.svg">
-            <span>Home</span>
-        </div>
-    </a>
-    
-    <a href="meuslivros.html" class="ativo">
-        <div>
-            <img src="icons/meuslivros.svg">
-            <span>Meus Livros</span>
-        </div>
-    </a>
-    
-    <a href="favoritos.html">
-        <div>
-            <img src="icons/favoritos.svg">
-            <span>Favoritos</span>
-        </div>
-    </a>
-    
-    <a href="perfil.html">
-        <div>
-            <img src="icons/perfil.svg">
-            <span>Perfil</span>
-        </div>
-    </a>
+    <div class="bottom-menu">
+        <a href="home.html" class="menu-item"><i class="fas fa-home"></i><span>Home</span></a>
+        <a href="meuslivros.html" class="menu-item active"><i class="fas fa-book"></i><span>Meus Livros</span></a>
+        <a href="favoritos.html" class="menu-item"><i class="fas fa-star"></i><span>Favoritos</span></a>
+        <a href="perfil.html" class="menu-item"><i class="fas fa-user"></i><span>Perfil</span></a>
+    </div>
 </div>
 
+<!-- Popup flutuante global -->
+<div id="popupMenu" class="popup-menu">
+    <button id="popupFavorito"><i class="far fa-star"></i> Favoritar</button>
+    <button id="popupLeitura"><i class="fas fa-book-open"></i> Definir leitura atual</button>
+    <button id="popupProgresso"><i class="fas fa-chart-line"></i> Marcar progresso</button>
+    <button id="popupExcluir"><i class="fas fa-trash-alt"></i> Excluir livro</button>
 </div>
 
 <script>
-const livrosData = [
-    { titulo: "Labirinto do Fauno", autor: "Cornelia Funke", imagem: "https://m.media-amazon.com/images/I/71+yGuF-ioL._AC_UF1000,1000_QL80_.jpg" },
-    { titulo: "Para Algernon", autor: "Daniel Keyes", imagem: "https://m.media-amazon.com/images/I/91i29TgAsvL._UF1000,1000_QL80_.jpg" },
-    { titulo: "Vampiro", autor: "Ann Rice", imagem: "https://m.media-amazon.com/images/I/71uPPT8QB2L._SY342_.jpg" },
-    { titulo: "Caça ao Lobisomem", autor: "Toni Brandão", imagem: "https://globaleditora.com.br/capas/400/3450.jpg" },
-    { titulo: "Frankenstein", autor: "Mary Shelley", imagem: "https://m.media-amazon.com/images/I/61H-JBmwTEL._SY445_SX342_ML2_.jpg" },
-    { titulo: "Extraordinário", autor: "R. J. Palacio", imagem: "https://m.media-amazon.com/images/I/6132ndvQdiL._AC_UF1000,1000_QL80_.jpg" }
-];
+    let currentBookId = null;
 
-const livrosContainer = document.getElementById('listaLivros');
-const searchInput = document.getElementById('search');
-const contador = document.getElementById('contador');
-
-function renderizarLivros(filtro = '') {
-    const termo = filtro.toLowerCase().trim();
-
-    const filtrados = livrosData.filter(livro =>
-        livro.titulo.toLowerCase().includes(termo) ||
-        livro.autor.toLowerCase().includes(termo)
-    );
-
-    contador.textContent = `${filtrados.length} ${filtrados.length === 1 ? 'livro encontrado' : 'livros encontrados'}`;
-
-    livrosContainer.innerHTML = '';
-
-    if (filtrados.length === 0) {
-        livrosContainer.innerHTML = '<div class="sem-resultados">Nenhum livro encontrado</div>';
-        return;
+    function fecharPopup() {
+        const popup = document.getElementById('popupMenu');
+        popup.style.display = 'none';
+        currentBookId = null;
     }
 
-    filtrados.forEach(livro => {
-        const div = document.createElement('div');
-        div.className = 'livro';
+    function abrirPopup(id, event) {
+        event.stopPropagation();
+        currentBookId = id;
+        const popup = document.getElementById('popupMenu');
+        // posicionar próximo ao clique
+        popup.style.display = 'block';
+        popup.style.left = (event.clientX - 80) + 'px';
+        popup.style.top = (event.clientY - 10) + 'px';
+        // ajustar para não sair da tela
+        setTimeout(() => {
+            const rect = popup.getBoundingClientRect();
+            if (rect.right > window.innerWidth) popup.style.left = (window.innerWidth - rect.width - 10) + 'px';
+            if (rect.bottom > window.innerHeight) popup.style.top = (window.innerHeight - rect.height - 10) + 'px';
+        }, 10);
+    }
 
-        div.innerHTML = `
-            <img src="${livro.imagem}">
-            <div class="livro-info">
-                <div class="livro-titulo">${livro.titulo}</div>
-                <div class="livro-autor">${livro.autor}</div>
-            </div>
-        `;
-
-        div.onclick = () => {
-            alert(`${livro.titulo}\n${livro.autor}`);
-        };
-
-        livrosContainer.appendChild(div);
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.popup-menu') && !e.target.closest('.menu-dots')) {
+            fecharPopup();
+        }
     });
-}
 
-searchInput.addEventListener('input', e => {
-    renderizarLivros(e.target.value);
-});
+    async function renderLista() {
+        let livros = getLivros();
+        const termo = document.getElementById('searchInput').value.toLowerCase();
+        if (termo) livros = livros.filter(l => l.titulo.toLowerCase().includes(termo) || l.autor.toLowerCase().includes(termo));
+        document.getElementById('contador').innerText = `${livros.length} ${livros.length === 1 ? 'livro' : 'livros'} encontrados`;
+        const container = document.getElementById('livrosGrid');
+        if (livros.length === 0) {
+            container.innerHTML = '<div class="text-center" style="padding:40px;">Nenhum livro cadastrado.</div>';
+            return;
+        }
+        container.innerHTML = livros.map(livro => {
+            const percent = livro.totalPaginas ? (livro.progressoPagina / livro.totalPaginas * 100).toFixed(0) : (livro.progresso || 0);
+            return `
+            <div class="book-card">
+                <img src="${livro.capaUrl}" class="book-cover" data-id="${livro.id}" alt="${livro.titulo}">
+                <div class="menu-dots" data-id="${livro.id}">⋮</div>
+                <p style="font-weight:bold; margin-top:6px;">${livro.titulo.length > 18 ? livro.titulo.slice(0,15)+'...' : livro.titulo}</p>
+                <p style="font-size:12px; color:#6b7280;">${livro.autor}</p>
+                <div class="progress-info">
+                    <i class="fas fa-book-open"></i> ${percent}%
+                    ${livro.totalPaginas ? ` (pág ${livro.progressoPagina}/${livro.totalPaginas})` : ''}
+                </div>
+            </div>
+        `}).join('');
 
-renderizarLivros();
+        // Clique na capa -> detalhes
+        document.querySelectorAll('.book-cover').forEach(img => {
+            img.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const id = img.dataset.id;
+                window.location.href = `detalhes.html?id=${id}`;
+            });
+        });
+
+        // Clique nos três pontos
+        document.querySelectorAll('.menu-dots').forEach(dot => {
+            dot.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const id = dot.dataset.id;
+                abrirPopup(id, e);
+            });
+        });
+    }
+
+    // Ações do popup
+    document.getElementById('popupFavorito').onclick = async () => {
+        if (currentBookId) {
+            const livro = getLivros().find(l => l.id == currentBookId);
+            if (livro) {
+                await atualizarLivro(currentBookId, { favorito: !livro.favorito });
+                renderLista();
+            }
+            fecharPopup();
+        }
+    };
+    document.getElementById('popupLeitura').onclick = async () => {
+        if (currentBookId) {
+            setLeituraAtualId(currentBookId);
+            alert("Livro definido como leitura atual na Home!");
+            fecharPopup();
+        }
+    };
+    document.getElementById('popupProgresso').onclick = async () => {
+        if (currentBookId) {
+            const livro = getLivros().find(l => l.id == currentBookId);
+            let novo = prompt(`Progresso atual (0-100%):`, livro.progresso || 0);
+            novo = parseInt(novo);
+            if (!isNaN(novo) && novo >= 0 && novo <= 100) {
+                let novaPagina = livro.totalPaginas ? Math.floor((novo / 100) * livro.totalPaginas) : 0;
+                await atualizarLivro(currentBookId, { progresso: novo, progressoPagina: novaPagina });
+                renderLista();
+            }
+            fecharPopup();
+        }
+    };
+    document.getElementById('popupExcluir').onclick = async () => {
+        if (currentBookId) {
+            if (confirm("Excluir este livro permanentemente?")) {
+                await removerLivro(currentBookId);
+                renderLista();
+            }
+            fecharPopup();
+        }
+    };
+
+    document.getElementById('searchInput').addEventListener('input', renderLista);
+    document.getElementById('addBookBtn').onclick = () => location.href = 'cadastro.html';
+    renderLista();
 </script>
-
 </body>
 </html>

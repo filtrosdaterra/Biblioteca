@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adicionar Livro - Readify</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+    </script>
+    <style>
+        .fake-upload { cursor: pointer; }
+        #previewCapa { max-width: 100%; border-radius: 12px; margin-top: 8px; }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <div class="app-header">
+        <button class="back-btn" onclick="history.back()"><i class="fas fa-chevron-left"></i></button>
+        <h1>Adicionar Livro</h1>
+        <div class="placeholder"></div>
+    </div>
+
+    <div style="padding: 16px;">
+        <div id="uploadArea" class="fake-upload">
+            <i class="fas fa-cloud-upload-alt fa-2x"></i>
+            <span>Clique para inserir URL da capa</span>
+            <img id="previewCapa" style="display:none;">
+        </div>
+        
+        <div style="margin-bottom: 16px;">
+            <label>📄 Arquivo PDF (opcional)</label>
+            <input type="file" id="pdfFile" accept="application/pdf">
+            <div id="pdfInfo" style="font-size: 12px; color: #6b7280; margin-top: 4px;"></div>
+        </div>
+
+        <input type="text" id="titulo" placeholder="Título *">
+        <input type="text" id="autor" placeholder="Autor *">
+        <input type="text" id="ano" placeholder="Ano *">
+        <input type="text" id="categoria" placeholder="Categoria *">
+        <textarea id="comentario" rows="3" placeholder="Comentário (opcional)"></textarea>
+
+        <label>Sua avaliação:</label>
+        <div class="star-rating" id="starRating">
+            <i class="far fa-star" data-val="1"></i>
+            <i class="far fa-star" data-val="2"></i>
+            <i class="far fa-star" data-val="3"></i>
+            <i class="far fa-star" data-val="4"></i>
+            <i class="far fa-star" data-val="5"></i>
+        </div>
+
+        <button id="salvarBtn" class="btn-primary mt-4">Salvar Livro</button>
+    </div>
+
+    <div class="bottom-menu">
+        <a href="home.html" class="menu-item"><i class="fas fa-home"></i><span>Home</span></a>
+        <a href="meuslivros.html" class="menu-item"><i class="fas fa-book"></i><span>Meus Livros</span></a>
+        <a href="favoritos.html" class="menu-item"><i class="fas fa-star"></i><span>Favoritos</span></a>
+        <a href="perfil.html" class="menu-item"><i class="fas fa-user"></i><span>Perfil</span></a>
+    </div>
+</div>
+<script src="db.js"></script>
+<script>
+    let capaUrl = "";
+    let avaliacao = 0;
+    let pdfFile = null;
+    let totalPaginas = 0;
+
+    const uploadDiv = document.getElementById('uploadArea');
+    const preview = document.getElementById('previewCapa');
+    uploadDiv.onclick = () => {
+        let url = prompt("Cole o endereço da imagem (URL):");
+        if (url && url.trim()) {
+            capaUrl = url.trim();
+            preview.src = capaUrl;
+            preview.style.display = 'block';
+            uploadDiv.querySelector('span').innerText = 'Capa adicionada!';
+        }
+    };
+
+    const stars = document.querySelectorAll('#starRating i');
+    stars.forEach(star => {
+        star.onclick = () => {
+            avaliacao = parseInt(star.dataset.val);
+            stars.forEach((s, idx) => {
+                if (idx < avaliacao) s.className = "fas fa-star";
+                else s.className = "far fa-star";
+            });
+        };
+    });
+
+    const pdfInput = document.getElementById('pdfFile');
+    const pdfInfo = document.getElementById('pdfInfo');
+    pdfInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) {
+            pdfFile = null;
+            totalPaginas = 0;
+            pdfInfo.innerText = '';
+            return;
+        }
+        pdfFile = file;
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        totalPaginas = pdf.numPages;
+        pdfInfo.innerText = `✅ PDF carregado: ${totalPaginas} páginas.`;
+    });
+
+    document.getElementById('salvarBtn').onclick = async () => {
+        const titulo = document.getElementById('titulo').value.trim();
+        const autor = document.getElementById('autor').value.trim();
+        const ano = document.getElementById('ano').value.trim();
+        const categoria = document.getElementById('categoria').value.trim();
+        const comentario = document.getElementById('comentario').value;
+
+        if (!titulo || !autor || !ano || !categoria || !capaUrl) {
+            alert("Preencha todos os campos obrigatórios e a capa.");
+            return;
+        }
+
+        const livro = {
+            titulo, autor, ano, categoria,
+            capaUrl, comentario, avaliacao,
+            favorito: false,
+            totalPaginas: totalPaginas,
+            progressoPagina: 0,
+            progresso: 0
+        };
+
+        await adicionarLivro(livro, pdfFile);
+        alert("Livro adicionado com sucesso!");
+        window.location.href = "meuslivros.html";
+    };
+</script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Readify - Favoritos</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .search-box {
+            margin: 16px;
+        }
+        .search-box input {
+            border-radius: 40px;
+            background: #f5f5f5;
+            border: none;
+            padding: 12px 20px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <div class="app-header">
+        <button class="back-btn" onclick="history.back()"><i class="fas fa-chevron-left"></i></button>
+        <h1>⭐ Favoritos</h1>
+        <div class="placeholder"></div>
+    </div>
+    <div class="search-box">
+        <input type="text" id="searchFav" placeholder="Buscar nos favoritos...">
+    </div>
+    <div id="favoritosGrid" class="grid-3cols"></div>
+
+    <div class="bottom-menu">
+        <a href="home.html" class="menu-item"><i class="fas fa-home"></i><span>Home</span></a>
+        <a href="meuslivros.html" class="menu-item"><i class="fas fa-book"></i><span>Meus Livros</span></a>
+        <a href="favoritos.html" class="menu-item active"><i class="fas fa-star"></i><span>Favoritos</span></a>
+        <a href="perfil.html" class="menu-item"><i class="fas fa-user"></i><span>Perfil</span></a>
+    </div>
+</div>
+<script src="db.js"></script>
+<script>
+    async function renderFavoritos() {
+        let favs = getFavoritos();
+        const termo = document.getElementById('searchFav').value.toLowerCase();
+        if (termo) favs = favs.filter(l => l.titulo.toLowerCase().includes(termo) || l.autor.toLowerCase().includes(termo));
+        const container = document.getElementById('favoritosGrid');
+        if (favs.length === 0) {
+            container.innerHTML = '<div class="text-center" style="padding:40px;">Nenhum favorito ainda.</div>';
+            return;
+        }
+        container.innerHTML = favs.map(l => `
+            <div style="cursor:pointer;" onclick="window.location.href='detalhes.html?id=${l.id}'">
+                <img src="${l.capaUrl}" class="book-cover">
+                <p style="font-weight:bold; margin-top:6px;">${l.titulo.length>18?l.titulo.slice(0,15)+'...':l.titulo}</p>
+                <p style="font-size:12px; color:#6b7280;">${l.autor}</p>
+            </div>
+        `).join('');
+    }
+    document.getElementById('searchFav').addEventListener('input', renderFavoritos);
+    renderFavoritos();
+</script>
+</body>
+</html>

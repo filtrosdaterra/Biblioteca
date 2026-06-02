@@ -2,273 +2,244 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meu Perfil - Amante de Livros</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Readify - Meu Perfil</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background: #f4f4f4;
-            padding-bottom: 70px; /* Espaço para o menu fixo */
-        }
-
-        /* TOPO */
-        .topo {
-            background: linear-gradient(135deg, #c9d8e6 0%, #b0c4de 100%);
+        .perfil-container {
+            background: linear-gradient(135deg, #e0eafc, #cfdef3);
+            border-radius: 0 0 32px 32px;
+            padding: 24px 20px;
             text-align: center;
-            padding: 30px 20px;
-            border-bottom-left-radius: 24px;
-            border-bottom-right-radius: 24px;
         }
-
-        .foto {
-            width: 100px;
-            height: 100px;
+        .foto-perfil {
+            width: 120px;
+            height: 120px;
             border-radius: 50%;
+            object-fit: cover;
             border: 4px solid white;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            object-fit: cover;
+            margin-bottom: 12px;
+            cursor: pointer;
         }
-
-        .nome {
-            font-size: 22px;
-            font-weight: bold;
-            margin-top: 12px;
-            color: #2c3e50;
+        .nome-perfil {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1e2a4a;
+            margin: 8px 0;
         }
-
-        .desc {
+        .bio-perfil {
             color: #4a627a;
             font-size: 14px;
-            margin-top: 4px;
+            margin: 8px 16px;
+            background: rgba(255,255,255,0.6);
+            border-radius: 40px;
+            padding: 8px 16px;
+            display: inline-block;
+            cursor: pointer;
         }
-
-        /* ESTATÍSTICAS */
-        .estatisticas {
+        .stats {
             display: flex;
             justify-content: center;
-            gap: 16px;
-            margin-top: 20px;
-            flex-wrap: wrap;
+            gap: 24px;
+            margin: 20px 0 0;
         }
-
-        .box {
-            padding: 12px 8px;
-            border-radius: 16px;
-            color: white;
-            width: 90px;
+        .stat-card {
+            background: white;
+            border-radius: 40px;
+            padding: 8px 20px;
             text-align: center;
-            font-size: 14px;
-            transition: transform 0.2s;
-            cursor: default;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
-        
-        .box:hover {
-            transform: translateY(-3px);
+        .stat-card i {
+            font-size: 20px;
+            color: #3b9e8c;
+            margin-right: 6px;
         }
-
-        .livros {
-            background: #e79a78;
-            box-shadow: 0 4px 10px rgba(231, 154, 120, 0.3);
+        .resenhas-section {
+            padding: 20px;
         }
-
-        .favoritos {
-            background: #5ea5a6;
-            box-shadow: 0 4px 10px rgba(94, 165, 166, 0.3);
-        }
-
-        .resenhas {
-            background: #8fb0a3;
-            box-shadow: 0 4px 10px rgba(143, 176, 163, 0.3);
-        }
-        
-        .box b {
-            font-size: 16px;
-            display: block;
-            margin-bottom: 6px;
-        }
-
-        /* FAVORITOS */
-        .favoritos-titulo {
-            margin: 28px 20px 16px 20px;
-            font-weight: bold;
-            font-size: 22px;
-            color: #2c3e50;
-            border-left: 4px solid #e79a78;
-            padding-left: 12px;
-        }
-
-        .livros-favoritos {
+        .resenha-card {
+            background: #f9f9f9;
+            border-radius: 20px;
+            padding: 16px;
+            margin-bottom: 16px;
             display: flex;
-            justify-content: flex-start;
-            gap: 16px;
-            flex-wrap: wrap;
-            padding: 0 20px;
+            gap: 12px;
+            align-items: center;
         }
-
-        .livros-favoritos img {
-            width: calc(33.33% - 12px);
-            max-width: 120px;
-            border-radius: 12px;
-            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-            transition: transform 0.2s;
-            cursor: pointer;
-            aspect-ratio: 2 / 3;
+        .resenha-card img {
+            width: 50px;
+            aspect-ratio: 2/3;
             object-fit: cover;
+            border-radius: 8px;
         }
-        
-        .livros-favoritos img:hover {
-            transform: scale(1.03);
-        }
-
-        /* MENU FIXO */
-        .menu {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(8px);
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            padding: 10px 0 14px;
-            border-top: 1px solid #e0e0e0;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
-        }
-
-        .menu a {
-            text-decoration: none;
-            color: #5a6e7a;
-            transition: color 0.2s;
+        .resenha-content {
             flex: 1;
-            text-align: center;
         }
-        
-        .menu a:hover {
-            color: #e79a78;
+        .resenha-content h4 {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 4px;
         }
-        
-        .menu div {
-            text-align: center;
+        .resenha-content p {
             font-size: 12px;
-            display: flex;
-            flex-direction: column;
+            color: #555;
+        }
+        .resenha-content i {
+            color: #ffc107;
+            font-size: 12px;
+        }
+        .sem-resenhas {
+            text-align: center;
+            color: #aaa;
+            padding: 20px;
+        }
+        .editar-perfil {
+            background: #3b9e8c;
+            color: white;
+            border: none;
+            padding: 8px 24px;
+            border-radius: 40px;
+            margin-top: 12px;
+            cursor: pointer;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
             align-items: center;
-            gap: 4px;
+            z-index: 1000;
         }
-        
-        .menu img {
-            width: 24px;
-            height: 24px;
-            opacity: 0.7;
-            transition: opacity 0.2s;
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            padding: 24px;
+            width: 80%;
+            max-width: 300px;
+            text-align: center;
         }
-        
-        .menu a:hover img {
-            opacity: 1;
-        }
-      
-        .menu .ativo {
-            color: #e79a78;
-        }
-        
-        .menu .ativo img {
-            opacity: 1;
-            filter: brightness(0) saturate(100%) invert(62%) sepia(34%) saturate(731%) hue-rotate(328deg) brightness(93%) contrast(88%);
-        }
-
-        /* Responsividade */
-        @media (max-width: 480px) {
-            .box {
-                width: 75px;
-                font-size: 12px;
-                padding: 8px 4px;
-            }
-            
-            .livros-favoritos img {
-                width: calc(33.33% - 10px);
-                max-width: 100px;
-            }
-            
-            .nome {
-                font-size: 18px;
-            }
-            
-            .favoritos-titulo {
-                font-size: 20px;
-            }
+        .modal-content input, .modal-content textarea {
+            width: 100%;
+            margin: 12px 0;
+            padding: 10px;
+            border-radius: 20px;
+            border: 1px solid #ddd;
         }
     </style>
 </head>
 <body>
+<div class="app-container">
+    <div class="perfil-container">
+        <img id="fotoPerfil" class="foto-perfil" src="" alt="Foto de perfil">
+        <div class="nome-perfil" id="nomePerfil"></div>
+        <div class="bio-perfil" id="bioPerfil"></div>
+        <button class="editar-perfil" id="editarPerfilBtn"><i class="fas fa-pen"></i> Editar perfil</button>
+        <div class="stats">
+            <div class="stat-card"><i class="fas fa-book"></i> <span id="totalLivros">0</span><br><small>livros</small></div>
+            <div class="stat-card"><i class="fas fa-star"></i> <span id="totalFav">0</span><br><small>favoritos</small></div>
+            <div class="stat-card"><i class="fas fa-pen"></i> <span id="totalResenhas">0</span><br><small>resenhas</small></div>
+        </div>
+    </div>
 
-<div class="topo">
-    <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Foto de perfil" class="foto">
-    <div class="nome">João Silva</div>
-    <div class="desc">📚 Amante de Livros 📖</div>
+    <div class="resenhas-section">
+        <h3 style="margin-bottom: 16px;"><i class="fas fa-comment-dots"></i> Minhas resenhas</h3>
+        <div id="resenhasList"></div>
+    </div>
 
-    <div class="estatisticas">
-        <div class="box livros">
-            <b>Livros</b>
-            21
-        </div>
-        <div class="box favoritos">
-            <b>Favoritos</b>
-            15
-        </div>
-        <div class="box resenhas">
-            <b>Resenhas</b>
-            4
-        </div>
+    <div class="bottom-menu">
+        <a href="home.html" class="menu-item"><i class="fas fa-home"></i><span>Home</span></a>
+        <a href="meuslivros.html" class="menu-item"><i class="fas fa-book"></i><span>Meus Livros</span></a>
+        <a href="favoritos.html" class="menu-item"><i class="fas fa-star"></i><span>Favoritos</span></a>
+        <a href="perfil.html" class="menu-item active"><i class="fas fa-user"></i><span>Perfil</span></a>
     </div>
 </div>
 
-<div class="favoritos-titulo">
-    ⭐ Meus Favoritos
+<!-- Modal de edição -->
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <h3>Editar Perfil</h3>
+        <input type="text" id="editNome" placeholder="Nome">
+        <textarea id="editBio" rows="3" placeholder="Bio"></textarea>
+        <input type="text" id="editFotoUrl" placeholder="URL da foto">
+        <button id="salvarPerfilBtn" class="btn-primary" style="margin-top: 12px;">Salvar</button>
+        <button id="fecharModalBtn" class="btn-outline" style="margin-top: 8px;">Cancelar</button>
+    </div>
 </div>
 
-<div class="livros-favoritos">
-    <img src="https://m.media-amazon.com/images/I/81af+MCATTL.jpg" alt="Capa do livro O Hobbit">
-    <img src="https://m.media-amazon.com/images/I/81WcnNQ-TBL.jpg" alt="Capa do livro 1984">
-    <img src="https://m.media-amazon.com/images/I/81t2CVWEsUL.jpg" alt="Capa do livro Dom Casmurro">
-</div>
-
-<!-- Menu de navegação corrigido -->
-<div class="menu">
-    <a href="home.html">
-        <div>
-            <img src="icons/inicio.svg" alt="Home">
-            <span>Home</span>
-        </div>
-    </a>
+<script src="db.js"></script>
+<script>
+    function carregarPerfil() {
+        const perfil = getPerfil();
+        document.getElementById('fotoPerfil').src = perfil.fotoUrl;
+        document.getElementById('nomePerfil').innerText = perfil.nome;
+        document.getElementById('bioPerfil').innerText = perfil.bio;
+        
+        const livros = getLivros();
+        document.getElementById('totalLivros').innerText = livros.length;
+        document.getElementById('totalFav').innerText = livros.filter(l => l.favorito).length;
+        const resenhas = livros.filter(l => l.comentario && l.comentario.trim().length > 0);
+        document.getElementById('totalResenhas').innerText = resenhas.length;
+        
+        const container = document.getElementById('resenhasList');
+        if (resenhas.length === 0) {
+            container.innerHTML = '<div class="sem-resenhas">Nenhuma resenha escrita ainda.<br>Adicione comentários nos livros!</div>';
+        } else {
+            container.innerHTML = resenhas.map(l => `
+                <div class="resenha-card" onclick="window.location.href='detalhes.html?id=${l.id}'">
+                    <img src="${l.capaUrl}">
+                    <div class="resenha-content">
+                        <h4>${l.titulo}</h4>
+                        <div>${[1,2,3,4,5].map(v => `<i class="fas fa-star" style="color:${v <= (l.avaliacao||0) ? '#ffc107' : '#e2e2e2'}"></i>`).join('')}</div>
+                        <p>${l.comentario.length > 80 ? l.comentario.substring(0,80)+'...' : l.comentario}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+    }
     
-    <a href="meuslivros.html">
-        <div>
-            <img src="icons/meuslivros.svg" alt="Meus Livros">
-            <span>Meus Livros</span>
-        </div>
-    </a>
+    // Modal edição
+    const modal = document.getElementById('editModal');
+    document.getElementById('editarPerfilBtn').onclick = () => {
+        const perfil = getPerfil();
+        document.getElementById('editNome').value = perfil.nome;
+        document.getElementById('editBio').value = perfil.bio;
+        document.getElementById('editFotoUrl').value = perfil.fotoUrl;
+        modal.style.display = 'flex';
+    };
+    document.getElementById('fecharModalBtn').onclick = () => modal.style.display = 'none';
+    document.getElementById('salvarPerfilBtn').onclick = () => {
+        const novoPerfil = {
+            nome: document.getElementById('editNome').value,
+            bio: document.getElementById('editBio').value,
+            fotoUrl: document.getElementById('editFotoUrl').value
+        };
+        salvarPerfil(novoPerfil);
+        modal.style.display = 'none';
+        carregarPerfil();
+    };
+    // Fechar modal clicando fora
+    window.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
     
-    <a href="index.html" class="ativo">
-        <div>
-            <img src="icons/favoritos.svg" alt="Favoritos">
-            <span>Favoritos</span>
-        </div>
-    </a>
+    // Clique na foto para editar
+    document.getElementById('fotoPerfil').onclick = () => {
+        const url = prompt("Nova URL da foto de perfil:");
+        if (url && url.trim()) {
+            const perfil = getPerfil();
+            perfil.fotoUrl = url.trim();
+            salvarPerfil(perfil);
+            carregarPerfil();
+        }
+    };
     
-    <a href="perfil.html">
-        <div>
-            <img src="icons/perfil.svg" alt="Perfil">
-            <span>Perfil</span>
-        </div>
-    </a>
-</div>
-
+    carregarPerfil();
+</script>
 </body>
 </html>

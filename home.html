@@ -1,166 +1,85 @@
-<!doctype html>
-<html lang="pt-BR" class="h-full">
-
+<!DOCTYPE html>
+<html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Readify: Tela Inicial</title>
-
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
-
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-<link rel="stylesheet" href="css/home.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Readify - Home</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
 </head>
+<body>
+<div class="app-container">
+    <div class="app-header">
+        <button class="back-btn" onclick="history.back()"><i class="fas fa-chevron-left"></i></button>
+        <h1>Bem-vindo, Filipe!</h1>
+        <div class="placeholder"></div>
+    </div>
 
-<body class="h-full">
+    <main>
+        <div id="leituraContainer" class="card card-highlight"></div>
+        <button id="btnBiblioteca" class="btn-primary" style="width: calc(100% - 32px); margin: 0 16px;">Ver minha biblioteca</button>
+        <div style="height: 1px; background: #e2e8f0; margin: 24px 16px;"></div>
+        <h2 style="margin: 0 16px 8px;">📖 Obras em Destaque</h2>
+        <div id="destaquesGrid" class="grid-3cols"></div>
+    </main>
 
-<div class="readify-home" style="max-width:480px;margin:0 auto;">
-
-<header class="flex items-center justify-between px-5 pt-6 pb-3">
-
-<button class="p-1 rounded-lg hover:bg-gray-100">
-<i data-lucide="chevron-left" style="width:26px;height:26px;color:#1e2a4a;"></i>
-</button>
-
-<h1 id="boas-vindas" class="text-xl font-bold">Bem-vindo, Filipe!</h1>
-
-<div style="width:34px;"></div>
-
-</header>
-
-
-<main class="flex-1 overflow-auto px-4 pb-24">
-
-<section class="rounded-2xl p-6 mt-3 bg-[#faf0e6]">
-
-<div class="flex gap-4">
-
-<div class="capa-do-livro flex-shrink-0" style="width:105px;">
-<img src="https://m.media-amazon.com/images/I/61mzLkXJdXL._SY466_.jpg">
+    <div class="bottom-menu">
+        <a href="home.html" class="menu-item active"><i class="fas fa-home"></i><span>Home</span></a>
+        <a href="meuslivros.html" class="menu-item"><i class="fas fa-book"></i><span>Meus Livros</span></a>
+        <a href="favoritos.html" class="menu-item"><i class="fas fa-star"></i><span>Favoritos</span></a>
+        <a href="perfil.html" class="menu-item"><i class="fas fa-user"></i><span>Perfil</span></a>
+    </div>
 </div>
 
-<div class="flex flex-col justify-center gap-1 flex-2 min-w-0">
+<script src="db.js"></script>
+<script>
+    async function renderLeitura() {
+        const livro = getLeituraAtual();
+        const container = document.getElementById('leituraContainer');
+        if (!livro) {
+            container.innerHTML = '<div class="text-center">Nenhum livro em leitura. <a href="meuslivros.html" style="color:#3b9e8c;">Escolha um</a></div>';
+            return;
+        }
+        const percent = livro.totalPaginas ? (livro.progressoPagina / livro.totalPaginas * 100).toFixed(0) : (livro.progresso || 0);
+        container.innerHTML = `
+            <div style="display:flex; gap:16px; flex-wrap:wrap;">
+                <img src="${livro.capaUrl}" style="width:100px; aspect-ratio:2/3; object-fit:cover; border-radius:12px; cursor:pointer;" onclick="verDetalhes('${livro.id}')">
+                <div style="flex:1;">
+                    <span style="font-size:12px; color:#6b7280;">LEITURA ATUAL</span>
+                    <p style="font-weight:bold; margin:8px 0;">${livro.titulo}</p>
+                    <p style="font-size:13px;">${livro.autor}</p>
+                    <div class="progress-bar"><div class="progress-fill" style="width:${percent}%"></div></div>
+                    <p style="font-size:12px;">Progresso: ${percent}% ${livro.totalPaginas ? `(pág ${livro.progressoPagina}/${livro.totalPaginas})` : ''}</p>
+                </div>
+            </div>
+        `;
+    }
 
-<span class="text-sm font-bold uppercase mb-2 text-gray-600">
-Leitura Atual
-</span>
+    function verDetalhes(id) {
+        window.location.href = `detalhes.html?id=${id}`;
+    }
 
-<div class="barra-de-progresso-vazia rounded-full h-5 w-full overflow-hidden flex mb-3">
+    function renderDestaques() {
+        const livros = getLivros().slice(0,3);
+        const grid = document.getElementById('destaquesGrid');
+        if (livros.length === 0) {
+            grid.innerHTML = '<p class="text-center">Nenhum livro cadastrado.</p>';
+            return;
+        }
+        grid.innerHTML = livros.map(l => `
+            <div onclick="verDetalhes('${l.id}')" style="cursor:pointer;">
+                <img src="${l.capaUrl}" class="book-cover">
+                <p style="font-weight:bold; margin-top:6px;">${l.titulo.length>20?l.titulo.slice(0,17)+'...':l.titulo}</p>
+                <p style="font-size:12px; color:#6b7280;">${l.autor}</p>
+            </div>
+        `).join('');
+    }
 
-<div class="barra-de-progresso-cheia rounded-full h-full flex items-center justify-center" style="width:75%;">
-<span class="text-white text-[10px] font-semibold">75%</span>
-</div>
-
-</div>
-
-<p id="autor-do-livro" class="text-xs text-gray-500">
-Igor Pires
-</p>
-
-<p class="text-sm font-bold max-w-[200px]">
-Textos cruéis demais para serem lidos rapidamente
-</p>
-
-</div>
-
-</div>
-
-</section>
-
-
-<button id="ver-minha-biblioteca" class="w-full mt-5 py-4 rounded-xl text-white font-bold text-base tracking-wide bg-[#3b9e8c]">
-Ver minha biblioteca
-</button>
-
-<div class="w-full h-px bg-gray-200 my-4"></div>
-
-<section class="rounded-2xl p-5 mt-5 mb-4 bg-[#eaf1f8]">
-
-<h2 class="text-lg font-bold mb-4">
-Obras em Destaque
-</h2>
-
-<div class="grid grid-cols-3 gap-4 pb-2">
-
-<div class="featured-card">
-
-<img class="capa-do-livro" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQKo8sm32e1AdCDm6wFXoNE8nnf5S3k2ZRCzNXvLDOW2sYLDVeJ">
-
-<p class="text-xs font-bold mt-2">
-Mansão Gallant
-</p>
-
-<p class="text-[11px] text-gray-500">
-V.E Schwab
-</p>
-
-</div>
-
-
-<div class="featured-card">
-
-<img class="capa-do-livro" src="https://m.media-amazon.com/images/I/41ziC4vXKBL._SY445_SX342_ML2_.jpg">
-
-<p class="text-xs font-bold mt-2">
-A Empregada
-</p>
-
-<p class="text-[11px] text-gray-500">
-Freida McFadden
-</p>
-
-</div>
-
-
-<div class="featured-card">
-
-<img class="capa-do-livro" src="https://m.media-amazon.com/images/I/91r5G8RxqfL.jpg">
-
-<p class="text-xs font-bold mt-2">
-É Assim que Acaba
-</p>
-
-<p class="text-[11px] text-gray-500">
-Colleen Hoover
-</p>
-
-</div>
-
-</div>
-
-</section>
-
-</main>
-
-<nav class="w-full border-t border-gray-200 bg-white flex items-center justify-around py-2 px-2">
-
-<a href="home.html" class="nav-item flex flex-col items-center">
-  <img src="icons/inicio.svg" class="w-6 md:w-8">
-  <span class="text-sm">Home</span>
-</a>
-
-<a href="meuslivros.html" class="nav-item flex flex-col items-center">
-  <img src="icons/meuslivros.svg" class="w-6 md:w-8">
-  <span class="text-sm">Meus Livros</span>
-</a>
-
-<a href="favoritos.html" class="nav-item flex flex-col items-center">
-  <img src="icons/favoritos.svg" class="w-6 md:w-8">
-  <span class="text-sm">Favoritos</span>
-</a>
-
-<a href="perfil.html" class="nav-item flex flex-col items-center">
-  <img src="icons/perfil.svg" class="w-6 md:w-8">
-  <span class="text-sm">Perfil</span>
-</a>
-
-</nav>
-
-</div>
-
-<script src="js/script.js"></script>
-
+    document.getElementById('btnBiblioteca').onclick = () => location.href='meuslivros.html';
+    renderLeitura();
+    renderDestaques();
+    window.verDetalhes = verDetalhes;
+</script>
 </body>
 </html>

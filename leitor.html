@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Readify - Leitor</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+    </script>
+    <style>
+        .leitor-container {
+            padding: 0;
+            background: #f5f5f5;
+            height: calc(100vh - 120px);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        canvas {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin: 20px auto;
+            max-width: 100%;
+            height: auto;
+            background: white;
+            display: block;
+        }
+        .controles {
+            position: sticky;
+            top: 0;
+            background: white;
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+            z-index: 10;
+        }
+        .controles button {
+            background: #3b9e8c;
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .controles button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .pagina-info {
+            font-weight: bold;
+            background: #f0f0f0;
+            padding: 6px 12px;
+            border-radius: 30px;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6b7280;
+        }
+        @media (min-width: 768px) {
+            .leitor-container {
+                height: calc(100vh - 140px);
+            }
+            canvas {
+                max-width: 80%;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="app-container" style="height: 100vh; display: flex; flex-direction: column;">
+    <div class="app-header">
+        <button class="back-btn" onclick="voltar()"><i class="fas fa-chevron-left"></i></button>
+        <h1 id="tituloLivro">Leitor</h1>
+        <div class="placeholder"></div>
+    </div>
+
+    <div class="controles">
+        <button id="prevPageBtn" disabled><i class="fas fa-chevron-left"></i> Anterior</button>
+        <span class="pagina-info">Página <span id="pageNum">0</span> / <span id="pageCount">0</span></span>
+        <button id="nextPageBtn" disabled>Próxima <i class="fas fa-chevron-right"></i></button>
+    </div>
+
+    <div class="leitor-container" id="leitorContainer">
+        <div class="loading">Carregando PDF...</div>
+    </div>
+
+    <div class="bottom-menu">
+        <a href="home.html" class="menu-item"><i class="fas fa-home"></i><span>Home</span></a>
+        <a href="meuslivros.html" class="menu-item"><i class="fas fa-book"></i><span>Meus Livros</span></a>
+        <a href="favoritos.html" class="menu-item"><i class="fas fa-star"></i><span>Favoritos</span></a>
+        <a href="perfil.html" class="menu-item"><i class="fas fa-user"></i><span>Perfil</span></a>
+    </div>
+</div>
+
+<script src="db.js"></script>
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const livroId = urlParams.get('id');
+    let pdfDoc = null;
+    let pageNum = 1;
+    let pageRendering = false;
+    let pageNumPending = null;
+    let scale = 1.5;
+    let canvas = null;
+    let ctx = null;
+
+    async function carregarPDF() {
+        const livros = getLivros();
+        const livro = livros.find(l => l.id == livroId);
+        if (!livro) {
+            document.getElementById('leitorContainer').innerHTML = '<div class="loading">Livro não encontrado.</div>';
+            return;
+        }
+        document.getElementById('tituloLivro').innerText = livro.titulo;
+        
+        const blob = await carregarPDF(livroId);
+        if (!blob) {
+            document.getElementById('leitorContainer').innerHTML = '<div class="loading">PDF não disponível para este livro. <br> <a href="detalhes.html?id='+livroId+'" style="color:#3b9e8c;">Voltar e adicionar PDF</a></div>';
+            return;
+        }
+        
+        const url = URL.createObjectURL(blob);
+        const loadingTask = pdfjsLib.getDocument(url);
+        loadingTask.promise.then(function(pdf) {
+            pdfDoc = pdf;
+            document.getElementById('pageCount').textContent = pdfDoc.numPages;
+            pageNum = livro.progressoPagina || 1;
+            if (pageNum < 1) pageNum = 1;
+            if (pageNum > pdfDoc.numPages) pageNum = pdfDoc.numPages;
+            renderPage(pageNum);
+        }).catch(function(error) {
+            console.error(error);
+            document.getElementById('leitorContainer').innerHTML = '<div class="loading">Erro ao carregar PDF. Arquivo pode estar corrompido.</div>';
+        });
+    }
+
+    function renderPage(num) {
+        pageRendering = true;
+        const container = document.getElementById('leitorContainer');
+        container.innerHTML = '';
+        canvas = document.createElement('canvas');
+        canvas.style.width = '100%';
+        canvas.style.height = 'auto';
+        container.appendChild(canvas);
+        ctx = canvas.getContext('2d');
+        
+        pdfDoc.getPage(num).then(function(page) {
+            const viewport = page.getViewport({ scale: scale });
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+            const renderContext = {
+                canvasContext: ctx,
+                viewport: viewport
+            };
+            page.render(renderContext).promise.then(function() {
+                pageRendering = false;
+                if (pageNumPending !== null) {
+                    renderPage(pageNumPending);
+                    pageNumPending = null;
+                }
+            });
+        });
+        
+        document.getElementById('pageNum').textContent = num;
+        document.getElementById('prevPageBtn').disabled = num <= 1;
+        document.getElementById('nextPageBtn').disabled = num >= pdfDoc.numPages;
+        
+        // Atualiza progresso
+        atualizarLivro(livroId, { progressoPagina: num });
+        const percent = Math.floor((num / pdfDoc.numPages) * 100);
+        atualizarLivro(livroId, { progresso: percent });
+    }
+
+    function queueRenderPage(num) {
+        if (pageRendering) {
+            pageNumPending = num;
+        } else {
+            renderPage(num);
+        }
+    }
+
+    document.getElementById('prevPageBtn').addEventListener('click', () => {
+        if (pageNum <= 1) return;
+        pageNum--;
+        queueRenderPage(pageNum);
+    });
+    document.getElementById('nextPageBtn').addEventListener('click', () => {
+        if (pageNum >= pdfDoc.numPages) return;
+        pageNum++;
+        queueRenderPage(pageNum);
+    });
+
+    function voltar() {
+        window.location.href = `detalhes.html?id=${livroId}`;
+    }
+
+    carregarPDF();
+</script>
+</body>
+</html>
