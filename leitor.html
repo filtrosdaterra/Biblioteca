@@ -3,76 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Readify - Leitor</title>
+    <title>Readify - Leitor de PDF</title>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script src="minio-client.js"></script>
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
     </script>
     <style>
-        .leitor-container {
-            padding: 0;
-            background: #f5f5f5;
-            height: calc(100vh - 120px);
-            overflow-y: auto;
+        .leitor-container { 
+            padding: 20px; 
+            background: #e8e8e8; 
+            min-height: calc(100vh - 140px);
             display: flex;
             flex-direction: column;
             align-items: center;
-        }
-        canvas {
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            margin: 20px auto;
-            max-width: 100%;
-            height: auto;
-            background: white;
-            display: block;
-        }
-        .controles {
-            position: sticky;
-            top: 0;
-            background: white;
-            padding: 12px;
-            border-bottom: 1px solid #e2e8f0;
-            display: flex;
             justify-content: center;
-            gap: 20px;
-            align-items: center;
-            flex-wrap: wrap;
-            z-index: 10;
         }
-        .controles button {
-            background: #3b9e8c;
-            border: none;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 30px;
-            font-size: 14px;
+        canvas { 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2); 
+            margin: 0 auto; 
+            max-width: 100%; 
+            height: auto; 
+            background: white; 
+            display: block;
+            border-radius: 8px;
+        }
+        .controles { 
+            position: sticky; 
+            top: 0; 
+            background: white; 
+            padding: 12px; 
+            border-bottom: 1px solid #e2e8f0; 
+            display: flex; 
+            justify-content: center; 
+            gap: 20px; 
+            align-items: center; 
+            flex-wrap: wrap; 
+            z-index: 10; 
+        }
+        .controles button { 
+            background: #3b9e8c; 
+            border: none; 
+            color: white; 
+            padding: 10px 20px; 
+            border-radius: 30px; 
+            font-size: 14px; 
             cursor: pointer;
-        }
-        .controles button:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-        .pagina-info {
             font-weight: bold;
-            background: #f0f0f0;
-            padding: 6px 12px;
-            border-radius: 30px;
         }
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #6b7280;
+        .controles button:disabled { 
+            background: #ccc; 
+            cursor: not-allowed; 
         }
-        @media (min-width: 768px) {
-            .leitor-container {
-                height: calc(100vh - 140px);
-            }
-            canvas {
-                max-width: 80%;
-            }
+        .pagina-info { 
+            font-weight: bold; 
+            background: #f0f0f0; 
+            padding: 8px 16px; 
+            border-radius: 30px; 
+        }
+        .loading, .error { 
+            text-align: center; 
+            padding: 60px 20px; 
+            font-size: 16px;
+        }
+        .error { color: #e74c3c; }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3b9e8c;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -80,18 +89,19 @@
 <div class="app-container" style="height: 100vh; display: flex; flex-direction: column;">
     <div class="app-header">
         <button class="back-btn" onclick="voltar()"><i class="fas fa-chevron-left"></i></button>
-        <h1 id="tituloLivro">Leitor</h1>
+        <h1 id="tituloLivro">Leitor de PDF</h1>
         <div class="placeholder"></div>
     </div>
 
     <div class="controles">
-        <button id="prevPageBtn" disabled><i class="fas fa-chevron-left"></i> Anterior</button>
+        <button id="prevPageBtn"><i class="fas fa-chevron-left"></i> Anterior</button>
         <span class="pagina-info">Página <span id="pageNum">0</span> / <span id="pageCount">0</span></span>
-        <button id="nextPageBtn" disabled>Próxima <i class="fas fa-chevron-right"></i></button>
+        <button id="nextPageBtn">Próxima <i class="fas fa-chevron-right"></i></button>
     </div>
 
-    <div class="leitor-container" id="leitorContainer">
-        <div class="loading">Carregando PDF...</div>
+    <div id="leitorContainer" class="leitor-container">
+        <div class="spinner"></div>
+        <div>Carregando PDF...</div>
     </div>
 
     <div class="bottom-menu">
@@ -110,46 +120,65 @@
     let pageNum = 1;
     let pageRendering = false;
     let pageNumPending = null;
-    let scale = 1.5;
+    let scale = 1.2;
     let canvas = null;
     let ctx = null;
 
     async function carregarPDF() {
-        const livros = getLivros();
-        const livro = livros.find(l => l.id == livroId);
-        if (!livro) {
-            document.getElementById('leitorContainer').innerHTML = '<div class="loading">Livro não encontrado.</div>';
-            return;
-        }
-        document.getElementById('tituloLivro').innerText = livro.titulo;
+        const container = document.getElementById('leitorContainer');
         
-        const blob = await carregarPDF(livroId);
-        if (!blob) {
-            document.getElementById('leitorContainer').innerHTML = '<div class="loading">PDF não disponível para este livro. <br> <a href="detalhes.html?id='+livroId+'" style="color:#3b9e8c;">Voltar e adicionar PDF</a></div>';
-            return;
-        }
-        
-        const url = URL.createObjectURL(blob);
-        const loadingTask = pdfjsLib.getDocument(url);
-        loadingTask.promise.then(function(pdf) {
-            pdfDoc = pdf;
+        try {
+            // Busca o livro
+            const livros = getLivros();
+            const livro = livros.find(l => l.id == livroId);
+            
+            if (!livro) {
+                container.innerHTML = '<div class="error">❌ Livro não encontrado</div>';
+                return;
+            }
+            
+            document.getElementById('tituloLivro').innerText = livro.titulo;
+            
+            // Verifica se tem PDF key
+            if (!livro.pdfKey) {
+                container.innerHTML = '<div class="error">📄 Nenhum PDF associado a este livro.<br><br>Você pode adicionar o PDF na tela de detalhes.</div>';
+                return;
+            }
+            
+            // Obtém a URL de download do MinIO
+            const downloadUrl = await getPDFDownloadURL(livroId);
+            
+            if (!downloadUrl) {
+                container.innerHTML = '<div class="error">❌ Erro ao obter o PDF. Tente novamente.</div>';
+                return;
+            }
+            
+            // Carrega o PDF
+            const loadingTask = pdfjsLib.getDocument(downloadUrl);
+            pdfDoc = await loadingTask.promise;
+            
             document.getElementById('pageCount').textContent = pdfDoc.numPages;
+            
+            // Página inicial (do progresso salvo)
             pageNum = livro.progressoPagina || 1;
             if (pageNum < 1) pageNum = 1;
             if (pageNum > pdfDoc.numPages) pageNum = pdfDoc.numPages;
+            
             renderPage(pageNum);
-        }).catch(function(error) {
-            console.error(error);
-            document.getElementById('leitorContainer').innerHTML = '<div class="loading">Erro ao carregar PDF. Arquivo pode estar corrompido.</div>';
-        });
+            
+        } catch (error) {
+            console.error('Erro ao carregar PDF:', error);
+            container.innerHTML = `<div class="error">❌ Erro ao carregar PDF: ${error.message}<br><br>Verifique se o arquivo existe no MinIO.</div>`;
+        }
     }
 
     function renderPage(num) {
         pageRendering = true;
         const container = document.getElementById('leitorContainer');
         container.innerHTML = '';
+        
         canvas = document.createElement('canvas');
-        canvas.style.width = '100%';
+        canvas.style.maxWidth = '100%';
         canvas.style.height = 'auto';
         container.appendChild(canvas);
         ctx = canvas.getContext('2d');
@@ -158,10 +187,12 @@
             const viewport = page.getViewport({ scale: scale });
             canvas.height = viewport.height;
             canvas.width = viewport.width;
+            
             const renderContext = {
                 canvasContext: ctx,
                 viewport: viewport
             };
+            
             page.render(renderContext).promise.then(function() {
                 pageRendering = false;
                 if (pageNumPending !== null) {
@@ -175,10 +206,14 @@
         document.getElementById('prevPageBtn').disabled = num <= 1;
         document.getElementById('nextPageBtn').disabled = num >= pdfDoc.numPages;
         
-        // Atualiza progresso
-        atualizarLivro(livroId, { progressoPagina: num });
+        // Salva progresso
+        salvarProgresso(num);
+    }
+
+    async function salvarProgresso(num) {
+        // Calcula percentual
         const percent = Math.floor((num / pdfDoc.numPages) * 100);
-        atualizarLivro(livroId, { progresso: percent });
+        await atualizarLivro(livroId, { progressoPagina: num, progresso: percent });
     }
 
     function queueRenderPage(num) {
@@ -194,6 +229,7 @@
         pageNum--;
         queueRenderPage(pageNum);
     });
+    
     document.getElementById('nextPageBtn').addEventListener('click', () => {
         if (pageNum >= pdfDoc.numPages) return;
         pageNum++;
@@ -204,6 +240,7 @@
         window.location.href = `detalhes.html?id=${livroId}`;
     }
 
+    // Inicia o carregamento
     carregarPDF();
 </script>
 </body>
