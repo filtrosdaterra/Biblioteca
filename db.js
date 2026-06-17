@@ -46,7 +46,7 @@ function removerLivro(id) {
     if (getLeituraAtualId() == id) {
         localStorage.removeItem(LEITURA_ATUAL_KEY);
     }
-    removerPDF(id); // Remove PDF do IndexedDB
+    removerPDF(id);
 }
 
 function getLeituraAtualId() {
@@ -71,14 +71,15 @@ function getFavoritos() {
 // ========== PERFIL (localStorage) ==========
 function getPerfil() {
     const padrao = {
-        nome: 'Filipe Leitor',
+        nome: 'Filipe Jorge',
         bio: 'Apaixonado por livros e tecnologia 📚',
-        fotoUrl: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'
+        fotoUrl: 'https://scontent-for2-2.cdninstagram.com/v/t51.82787-19/709092560_18094208231464344_3844619437791965228_n.jpg?efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLmRqYW5nby4xMDgwLmMyIn0&_nc_ht=scontent-for2-2.cdninstagram.com&_nc_cat=100&_nc_oc=Q6cZ2gFtpNGeMUUqT-dZkz92s78EvcLld_Ga6Jt5AngT37GzHi9vaio8T8VKqiWmOiBKkL8Y-GpIs5bvc-aqp43FNw17&_nc_ohc=FvX-fS5xXRcQ7kNvwFgkUWe&_nc_gid=Qhvd35_8dUP50HdEmH-Ndg&edm=AP4sbd4BAAAA&ccb=7-5&oh=00_Af9Nbrfmqngp5fmnlOtmWzFS80McSQoRYVVDYgxOb8oThA&oe=6A37EF97&_nc_sid=7a9f4b'
     };
     const dados = localStorage.getItem(PERFIL_KEY);
     return dados ? JSON.parse(dados) : padrao;
 }
 
+// FUNÇÃO CORRIGIDA: agora o nome é atualizarPerfil (igual ao que é chamado no HTML)
 function atualizarPerfil(novoPerfil) {
     localStorage.setItem(PERFIL_KEY, JSON.stringify(novoPerfil));
 }

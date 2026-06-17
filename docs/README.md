@@ -27,3 +27,12 @@ Yasmim: Inicialmente com a tela Cadastro de Livros (Index) | Banco de Dados
 Taís: Inicialmente com a tela Perfil do Usuário | Integração Front + API
       
 Tales: Inicialmente com a tela Favoritos | Teste + Organização
+
+# 1. Adicionar os arquivos modificados (ou use . para todos)
+git add .
+
+# 2. Criar um commit com uma mensagem descritiva
+git commit -m "Descrição das alterações"
+
+# 3. Enviar o commit para o GitHub (substitua main pela sua branch, se diferente)
+git push origin main
